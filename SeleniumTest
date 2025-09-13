@@ -1,0 +1,99 @@
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+
+import java.time.Duration;
+
+public class MultiBrowserPracticeTest {
+
+    public static void main(String[] args) {
+        // 创建Chrome和Edge模式测试
+        WebDriver chromeDriver = initializeChromeDriver(); // 初始化 Chrome WebDriver
+        WebDriver edgeDriver = initializeEdgeDriver();     // 初始化 Edge WebDriver
+
+        System.out.println("---------------测试开始：Chrome---------------");
+        performTest(chromeDriver);
+        System.out.println("---------------测试结束：Chrome---------------");
+
+        System.out.println("\n---------------测试开始：Edge---------------");
+        performTest(edgeDriver);
+        System.out.println("---------------测试结束：Edge---------------");
+
+        // 退出浏览器
+        chromeDriver.quit();
+        edgeDriver.quit();
+    }
+
+    // 初始化 Chrome WebDriver
+    public static WebDriver initializeChromeDriver() {
+        // 设置 ChromeDriver 的路径（替换为实际路径）
+        System.setProperty("webdriver.chrome.driver", "path/to/chromedriver");
+        WebDriver driver = new ChromeDriver();
+        driver.manage().window().maximize();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        return driver;
+    }
+
+    // 初始化 Edge WebDriver（启用 IE 模式）
+    public static WebDriver initializeEdgeDriver() {
+        // 设置 EdgeDriver 的路径（替换为实际路径）
+        System.setProperty("webdriver.edge.driver", "path/to/msedgedriver");
+        WebDriver driver = new EdgeDriver();
+        driver.manage().window().maximize();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        return driver;
+    }
+
+    // 执行测试流程
+    public static void performTest(WebDriver driver) {
+        try {
+            // 打开测试网站
+            driver.get("https://practicetestautomation.com/practice/");
+
+            // 点击 "Test Login Page"
+            WebElement testLoginPageLink = driver.findElement(By.linkText("Test Login Page"));
+            testLoginPageLink.click();
+
+            // 登录用户名和密码
+            WebElement usernameField = driver.findElement(By.id("username"));
+            WebElement passwordField = driver.findElement(By.id("password"));
+            WebElement submitButton = driver.findElement(By.id("submit"));
+
+            usernameField.sendKeys("student");
+            passwordField.sendKeys("Password123");
+            submitButton.click();
+
+            // 验证是否登录成功
+            WebElement successMessage = driver.findElement(By.xpath("//h1[text()='Logged In Successfully']"));
+            if (successMessage.isDisplayed()) {
+                System.out.println("登录成功！");
+            }
+
+            // 返回到主页
+            WebElement goBackLink = driver.findElement(By.linkText("Log out"));
+            goBackLink.click();
+
+            // 点击 "Test Exceptions"
+            WebElement testExceptionsLink = driver.findElement(By.linkText("Test Exceptions"));
+            testExceptionsLink.click();
+
+            // 处理页面下方 case
+            // 点击 Add 按钮
+            WebElement addButton = driver.findElement(By.id("add_btn"));
+            addButton.click();
+
+            // 点击 Throw 按钮
+            WebElement throwButton = driver.findElement(By.id("throw_btn"));
+            throwButton.click();
+
+            // 捕获异常消息
+            WebElement errorMessage = driver.findElement(By.id("error"));
+            System.out.println("捕获的异常消息: " + errorMessage.getText());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
