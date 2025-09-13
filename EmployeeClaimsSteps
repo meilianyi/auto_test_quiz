@@ -1,0 +1,108 @@
+package stepdefinitions;
+
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import utils.BrowserFactory;
+import io.cucumber.java.en.*;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.Date;
+
+public class EmployeeClaimsSteps {
+
+    WebDriver driver;
+    WebDriverWait wait;
+
+    @Given("I have launched {string} browser")
+    public void launchBrowser(String browser) {
+        driver = BrowserFactory.getBrowser(browser);
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+    @When("I open {string}")
+    public void openUrl(String url) {
+        driver.get(url);
+    }
+
+    @When("I login with username {string} and password {string}")
+    public void login(String username, String password) {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("username"))).sendKeys(username);
+        driver.findElement(By.name("password")).sendKeys(password);
+        driver.findElement(By.tagName("button")).click();
+    }
+
+    @When("I click on {string} in the left sidebar")
+    public void clickOnSidebarOption(String option) {
+        WebElement menuOption = wait.until(ExpectedConditions.elementToBeClickable(By.linkText(option)));
+        menuOption.click();
+    }
+
+    @When("I click on {string}")
+    public void clickOn(String element) {
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText(element))).click();
+    }
+
+    @When("I create a new claim request with:")
+    public void createNewClaimRequest(io.cucumber.datatable.DataTable table) {
+        var data = table.asMaps(String.class, String.class).get(0);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("employee-name"))).sendKeys(data.get("Employee Name"));
+        driver.findElement(By.id("event")).sendKeys(data.get("Event"));
+        driver.findElement(By.id("currency")).sendKeys(data.get("Currency"));
+        takeScreenshot("CreateClaimRequest");
+        driver.findElement(By.id("create-btn")).click();
+    }
+
+    @Then("I verify the creation success message and take a {string} screenshot")
+    public void verifySuccessMessage(String screenshotName) {
+        WebElement successMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("success-msg")));
+        if (successMessage.isDisplayed()) {
+            takeScreenshot(screenshotName);
+        }
+    }
+
+    @Then("I navigate to the Assign Claim details page")
+    public void navigateToAssignClaimDetails() {
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Details"))).click();
+    }
+
+    @Then("I verify the claim details and take a {string} screenshot")
+    public void verifyClaimDetails(String screenshotName) {
+        WebElement detailsSection = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("claim-details")));
+        if (detailsSection.isDisplayed()) {
+            takeScreenshot(screenshotName);
+        }
+    }
+
+    @When("I add an expense with:")
+    public void addExpense(io.cucumber.datatable.DataTable table) {
+        var data = table.asMaps(String.class, String.class).get(0);
+        driver.findElement(By.id("expense-type")).sendKeys(data.get("Expense Type"));
+        driver.findElement(By.id("date")).sendKeys(data.get("Date"));
+        driver.findElement(By.id("amount")).sendKeys(data.get("Amount"));
+        takeScreenshot("AddExpense");
+        driver.findElement(By.id("submit-expense")).click();
+    }
+
+    @Then("I verify the expense details are correct and take a {string} screenshot")
+    public void verifyExpenseDetails(String screenshotName) {
+        WebElement expenseSection = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("expense-details")));
+        if (expenseSection.isDisplayed()) {
+            takeScreenshot(screenshotName);
+        }
+    }
+
+    @Then("I click {string} and take a {string} screenshot")
+    public void clickBackAndTakeScreenshot(String button, String screenshotName) {
+        driver.findElement(By.linkText(button)).click();
+        takeScreenshot(screenshotName);
+    }
+
+    private void takeScreenshot(String screenshotName) {
+        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        screenshot.renameTo(new File("screenshots/" + screenshotName + "_" + timestamp + ".png"));
+    }
+}
